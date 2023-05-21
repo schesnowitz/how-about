@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}  
+<section>
+  <div class="container">
+  <h3 class="mt-4 text-transform-none fw-medium">
+    {{ page_texts.page_text_19 }}
+  </h3>
+  <div class="row">
+    <div class="col-lg-7 mb-4 mb-lg-0">
+      <img class="img-fluid rounded" src="../assets/img/blogs/s-3.jpg" alt="" />
+      <h2 class="mt-4 text-transform-none fw-medium">{{ object.title }}</h2>
+      <div class="mb-4"><span class="text-700">{{ page_texts.page_text_19 }} {{ object.reporter }}</span>
+        <span class="mx-2 text-700">|</span>
+        <span class="text-700">{{ object.created_on }}</span>
+        <span class="mx-2 text-700">|</span>
+        <a class="text-700" target="_blank" href="{{ object.url }}">{{ page_texts.page_text_20 }}</a>
+        <span class="mx-2 text-700">|</span>
+        <a class="text-700" href="{% url 'oai:list' %}">
+        Latest Stories
+        </a>
+      </div>
+      <p>{{ object.content|safe }}</p>
+    </div>
+    <div class="col-lg-5 ps-lg-7">
+      <h4 class="mt-4 mb-3 fw-normal">{{ page_texts.page_text_18 }}</h4>
+      <div class="d-flex mb-3">
+        <div class="flex-1 ms-3">
+          <span class="mx-2 text-700">
+
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a href="{% url 'oai:update' oai.id %}" role="button" class="secondary">Update</a>
+  <!-- end of .container-->
+</section>
+{% endblock content %}

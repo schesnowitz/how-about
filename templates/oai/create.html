@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}  
+{% if not story_content %} 
+<form method=POST action="{% url 'oai:create' %}" id="formOne">
+  <input type="hidden" name="form_type" value="formOne">
+  {% csrf_token %}   
+  <input type="text" name="url" class="form-control" id="url" placeholder="news url">
+  <small id="urlHelp" class="form-text text-muted">Enter URL</small>
+  <button type="submit" class="btn btn-primary">Go get it!</button>
+</form>
+{% endif %} 
+{% if story_content %} 
+<h4>Reporter Name</h4>
+<p>{{story_reporter_name}}</p>
+<h4>Story Title</h4>
+<p>{{story_title}}</p>
+<h4>Story Content</h4>
+<p>{{story_content}}</p>
+<form method=POST action="{% url 'oai:create' %}"id="formTwo">
+  <input type="hidden" name="form_type" value="formTwo">
+  {% csrf_token %} 
+  <input type="hidden" value="{{url}}" name="url" class="form-control" id="url" placeholder="news url">
+  <input type="hidden" value="{{story_reporter_name}}" name="story_reporter_name" class="form-control" id="story_reporter_name" placeholder="reporter name">
+  </br>
+  <input type="hidden" value="{{story_title}}" name="story_title" class="form-control" id="story_title" placeholder="story title">
+  </br>  
+  <input type="hidden" class="form-control" value="{{story_content}}"
+    name="story_content" id="story_content"></input>
+  </div>
+  </br>
+  <button type="submit" class="btn btn-primary">Save and continue to the edit page.</button>
+</form>
+{% endif %}
+{% endblock content %}
