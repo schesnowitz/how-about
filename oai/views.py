@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.views.generic import ListView, DetailView
-from .models import Oai
+from .models import Oai, Document, DocumentPath, DocumentQuery
+from django.core.files.storage import FileSystemStorage
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -248,3 +249,124 @@ class OaiListView(ListView):
 class OaiDetailView(DetailView):
     model = Oai
     template_name = "oai/detail.html"
+ 
+
+
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ('description', 'document_path', 'document_url' )
+        widgets = {'document_url': forms.HiddenInput()}
+        def __init__(self, *args, **kwargs):
+            super(DocumentForm, self).__init__(*args, **kwargs)
+            self.fields['document_url'].initial = self.document_path
+def document_upload(request):   
+    user_docs = Document.objects.order_by('-uploaded_at')
+    if request.method == 'POST':
+        user_docs = Document.objects.order_by('-uploaded_at')
+        form = DocumentForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            # f = form.save(commit=False)
+            # document_url = form.cleaned_data.get("document_path")
+            # f.document_url = document_url
+     
+            # f.save()
+
+
+            initial_obj = form.save(commit=False)
+            initial_obj.save()   
+            # return path name from `upload_to='documents/'` in your `models.py` + absolute path of file.
+            # eg; `documents/filename.csv`
+            print(initial_obj.document_path)
+
+            # return `MEDIA_URL` + `upload_to` + absolute path of file.
+            # eg; `/media/documents/filename.csv`
+            print(initial_obj.document_path.url)
+  
+            form.save()
+
+
+            return render(request, 'oai/document_upload.html', {'form': form, 'user_docs' : user_docs})
+        else:
+            form = DocumentForm()
+            return render(request, 'oai/document_upload.html', {'form': form, 'user_docs' : user_docs})
+   
+  
+    return render(request, 'oai/document_upload.html', context={'user_docs' : user_docs})
+
+class DocumentSelectForm(forms.ModelForm):
+    class Meta:
+        model = DocumentPath
+        fields = ('doc_path',)
+
+
+def documents(request):   
+    obj = Document.objects.all()
+    last_doc_object = DocumentPath.objects.last()
+    if request.method == 'POST':
+        obj = Document.objects.all()
+        form = DocumentSelectForm(request.POST)
+    
+        if form.is_valid():
+            form.save() 
+
+        else:
+            form = DocumentSelectForm() 
+
+    return render(request, 'oai/documents.html', {'obj': obj, 'form' : form, 'last_doc' : last_doc_object})
+  
+from langchain.agents.agent_toolkits import (
+    create_vectorstore_agent,
+    VectorStoreToolkit,
+    VectorStoreInfo
+)
+
+from langchain.document_loaders import PyPDFLoader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.chains import RetrievalQA
+
+
+
+def document_interact(request, pk):
+    doc = Document.objects.get(pk=pk) 
+    if request.method == "POST":
+
+  
+        llm = OpenAI(temperature=0.1, verbose=True)
+        file_url = request.build_absolute_uri(doc.document_path.url)
+
+        loader = PyPDFLoader(file_url) 
+        documents = loader.load_and_split()
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        texts = text_splitter.split_documents(documents)
+
+        embeddings = OpenAIEmbeddings()
+        docsearch = Chroma.from_documents(texts, embeddings)
+
+
+        qa = RetrievalQA.from_chain_type(llm=llm, chain_type="map_reduce", retriever=docsearch.as_retriever())
+
+ 
+
+        query = request.POST.get("doc_query")
+        response = qa.run(query)
+                
+
+        return render(request, 'oai/doc_interact.html', {'doc' : doc, 'response' : response})
+    return render(request, 'oai/doc_interact.html', {'doc' : doc})
+        
+
+            #     if (
+            #     request.POST.get("form_type") == "formTwo"
+                
+            #     and request.POST.get("story_content")
+            #     and request.POST.get("url")
+            #     and request.POST.get("story_reporter_name")
+            # ):
+            #     oai = Oai()
+            #     oai.title = request.POST.get("story_title")
+

@@ -16,7 +16,7 @@
 <p>{{story_title}}</p>
 <h4>Story Content</h4>
 <p>{{story_content}}</p>
-<form method=POST action="{% url 'oai:create' %}"id="formTwo">
+<form method=POST action="{% url 'oai:create' %}" id="formTwo">
   <input type="hidden" name="form_type" value="formTwo">
   {% csrf_token %} 
   <input type="hidden" value="{{url}}" name="url" class="form-control" id="url" placeholder="news url">

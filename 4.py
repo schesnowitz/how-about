@@ -1,8 +1,10 @@
 import os
-from secret import OPENAI_API_KEY, HUGGINGFACEHUB_API_TOKEN , PGDATABASE, PGHOST, PGPASSWORD, PGPORT, PGUSER
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = HUGGINGFACEHUB_API_TOKEN 
+from secret import OPENAI_API_KEY
+
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-from langchain import HuggingFaceHub
+
+
+
 from langchain.llms import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -13,19 +15,8 @@ from langchain.chains import LLMChain
 from datetime import datetime
 
 dt = datetime.now()
-repo_id = "nomic-ai/gpt4all-13b-snoozy" # See https://huggingface.co/models?pipeline_tag=text-generation&sort=downloads for some other options
 
-llm = HuggingFaceHub(repo_id=repo_id, model_kwargs={"temperature":0, "max_length":64})
-# llm = OpenAI(temperature=0.9, verbose=True)
-template = """Question: {question}
-
-Answer: Let's think step by step."""
-prompt = PromptTemplate(template=template, input_variables=["question"])
-llm_chain = LLMChain(prompt=prompt, llm=llm)
-
-question = "Who won the FIFA World Cup in the year 1994? "
-
-print(llm_chain.run(question))
+llm = OpenAI(temperature=0.9, verbose=True)
 
 
 loader = WebBaseLoader(
@@ -35,7 +26,7 @@ data = loader.load()
 
 
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=300, chunk_overlap=10, length_function=len
+    chunk_size=2000, chunk_overlap=250, length_function=len
 )
 
 docs = text_splitter.split_documents(data)
@@ -52,6 +43,7 @@ Reporter Name
 """
 
 prompt_template = """Use the context below to create a ficticious name for a news reporter.
+the name should be less than 25 characters, only generate a full name:
     name: {name}
     context: {query}
     Reporter Name:"""
@@ -65,6 +57,55 @@ chain = LLMChain(llm=llm, prompt=story_reporter, verbose=False)
 
 
 query = "write a title for the story"
-docs = db.similarity_search(query, k=1)
+docs = db.similarity_search(query, k=3)
 story_reporter_name = chain.run({"name": docs, "query": query})
 print(story_reporter_name)
+
+
+"""
+-------------------------------------------------------------
+Story Title
+-------------------------------------------------------------
+"""
+
+prompt_template = """Use the context below to write  a title.:
+    Context: {title}
+    Topic: {query}
+    Blog title:"""
+
+title_content = PromptTemplate(
+    template=prompt_template, input_variables=["title", "query"]
+)
+
+
+chain = LLMChain(llm=llm, prompt=title_content, verbose=False)
+
+
+query = "write a title for the story"
+docs = db.similarity_search(query, k=3)
+story_title = chain.run({"title": docs, "query": query})
+print(story_title)
+
+"""
+-------------------------------------------------------------
+Story Content
+-------------------------------------------------------------
+"""
+
+prompt_template = """Use the context below to write a 700 word blog post about the context below:
+    Context: {context}
+    Topic: {query}
+    Blog post:"""
+
+prompt_content = PromptTemplate(
+    template=prompt_template, input_variables=["context", "query"]
+)
+
+
+chain = LLMChain(llm=llm, prompt=prompt_content, verbose=False)
+
+
+query = "write a detailed synopsis of this story"
+docs = db.similarity_search(query, k=3)
+story_content = chain.run({"context": docs, "query": query})
+print((story_content))

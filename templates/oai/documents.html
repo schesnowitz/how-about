@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}  
+
+
+{{last_doc.doc_path}} </br>
+
+<form method="POST" id="formOne">
+    {% csrf_token %}
+
+  
+
+
+    <input type="text" name="doc_path" list="docs">
+    <datalist id="docs">
+    {% for file in obj %}  
+        <option id="document_selected" name="doc_path" value="{{ file.document }}">{{ file.document }}</option>
+    {% endfor %}
+    </datalist>
+
+    <button type="submit">Upload</button>
+    </form>
+{% endblock content %} 

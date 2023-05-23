@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}  
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+{{form}}
+    <button type="submit">Upload Docs</button>
+  </form>
+
+
+  {% if user_docs %}
+  {% for doc in user_docs %}
+    <p>File uploaded at: <a href="{% url 'oai:document_interact' doc.id %}">{{ doc.document_path }}</a></p>
+ 
+  {% endfor %}
+{% endif %}
+{% endblock content %}

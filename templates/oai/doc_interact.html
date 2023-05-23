@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}  
+{{ object.description }}
+
+<a href="{{ doc.document_path.url }}">doc</a>
+<form method="POST" id="formOne">
+    {% csrf_token %}
+
+  
+    <input name="doc_query" class="form-control" id="someID">
+
+
+
+
+    <button type="submit">Upload</button>
+    </form>
+    <p>{{response}}</p> 
+{% endblock content %} 
