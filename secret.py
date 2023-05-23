@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 OPENAI_API_KEY='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' 
 SERPAPI_API_KEY='693bd7e4e40edc19531d2feb333056fa04f1eaf9405de743931b2cc5ec54ed10'
 HUGGINGFACEHUB_API_TOKEN='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'
@@ -11,3 +12,6 @@ PGHOST='containers-us-west-32.railway.app'
 PGPASSWORD='wgZLXggkz8pRHgNeYFnk'
 PGPORT='6881'
 PGUSER='postgres'
+=======
+
+>>>>>>> c9e9a44cb4ec2ebf91a54f7ce1045d5c11c99fa4
